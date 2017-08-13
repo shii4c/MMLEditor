@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project MMLEditor">
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+    	<mkdir dir="${basedir}/output"/>
+        <jar destfile="${basedir}/output/MMLEditor.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Main-Class" value="ui.MMLEditFrame"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+    </target>
+</project>
