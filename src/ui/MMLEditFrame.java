@@ -42,8 +42,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 
 import audio.MMLParser;
-import audio.MMLPlayer2;
 import audio.MMLParser.TimeRange;
+import audio.MMLPlayer2;
 
 @SuppressWarnings("serial")
 public class MMLEditFrame extends JFrame implements WindowListener {
@@ -58,28 +58,28 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 	private JFileChooser fileChooser_;
 	private File currentFile_;
 	private boolean isModified_;
-	
+
 	private MMLPlayer2 player_ = new MMLPlayer2();
 	private Thread playThread_;
 	private ArrayList<MMLInfo> mmlInfoList_ = new ArrayList<>();
 	private Timer timer_;
 	private int refreshCounter_ = 1;
-	
+
 	public MMLEditFrame() {
 		setLayout(new BorderLayout());
 		setSize(720, 480);
-		
+
 		// North
 		JPanel northPanel = new JPanel();
 		add(northPanel, BorderLayout.NORTH);
 		northPanel.add(btnPlay_);
-		
+
 		// Center
 		add(centerPanel_, BorderLayout.CENTER);
 		for (int i = 0; i < 3; i++) {
 			addEditor();
 		}
-		
+
 		// Menu
 		JMenuBar menuBar = new JMenuBar();
 		JMenu mnuFile = new JMenu("File");
@@ -91,7 +91,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		mnuPlay.add(new JMenuItem(actPlay_));
 		menuBar.add(mnuPlay);
 		setJMenuBar(menuBar);
-		
+
 		// Timer
 		timer_ = new Timer(100, new ActionListener() {
 			@Override
@@ -100,11 +100,11 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			}
 		});
 		timer_.start();
-		
+
 		actPlay_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 		btnPlay_.setFocusable(false);
 		actSave_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
-		
+
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(this);
 	}
@@ -130,7 +130,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		if (isModified_) { title += " [変更]"; }
 		setTitle(title);
 	}
-	
+
 	private void addEditor() {
 		JTextArea mmlEditor = new JTextArea();
 		mmlEditor.setLineWrap(true);
@@ -138,20 +138,20 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		centerPanel_.add(new JScrollPane(mmlEditor));
 		mmlInfoList_.add(new MMLInfo(mmlEditor));
 	}
-	
+
 	private void removeEditor(int index) {
 		MMLInfo mmlInfo = mmlInfoList_.remove(index);
 		mmlEditors_.remove(mmlInfo.editor_);
 		centerPanel_.remove(index);
 	}
-	
+
 	private void timer() {
 		if (refreshCounter_ > 0) {
 			refreshCounter_--;
 			if (refreshCounter_ == 0) {
 				MMLInfo focusedMMLInfo = null;
 				for (MMLInfo mmlInfo : mmlInfoList_) {
-					mmlInfo.refresh();
+					mmlInfo.refresh(false);
 					if (mmlInfo.editor_.isFocusOwner()) {
 						focusedMMLInfo = mmlInfo;
 					}
@@ -168,7 +168,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				}
 			}
 		}
-		
+
 		// update playing position
 		if (playThread_ != null) {
 			MMLParser.Note[] notes = player_.getCurrentPlayingNotes();
@@ -177,38 +177,38 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			}
 		}
 	}
-	
+
 	private void textChanged() {
 		if (!isModified_) {
 			isModified_ = true;
 			setTitle();
 		}
 	}
-	
+
 	public void actPlayExecuted(ActionEvent e) {
 		if (playThread_ != null) {
 			player_.requestStop();
 			return;
 		}
-		
+
 		MMLInfo focusedMMLInfo = null;
 		final MMLParser[] mmlList = new MMLParser[mmlInfoList_.size()];
 		for (int i = 0; i < mmlInfoList_.size(); i++) {
 			MMLInfo mmlInfo = mmlInfoList_.get(i);
 			mmlInfo.refreshPositions();
-			mmlList[i] = mmlInfo.mml_;
+			mmlList[i] = mmlInfo.mmlForPlay_;
 			if (mmlInfo.editor_.isFocusOwner()) { focusedMMLInfo = mmlInfo; }
 		}
 		final TimeRange timeRange = new TimeRange(0, Double.MAX_VALUE);
 		if (focusedMMLInfo != null && focusedMMLInfo.editor_.getSelectionEnd() - focusedMMLInfo.editor_.getSelectionStart() > 0) {
 			int startPos = focusedMMLInfo.editor_.getSelectionStart();
 			int endPos = focusedMMLInfo.editor_.getSelectionEnd();
-			TimeRange selectedTimeRange = focusedMMLInfo.mml_.getTimeRange(startPos, endPos);
+			TimeRange selectedTimeRange = focusedMMLInfo.mmlForPlay_.getTimeRange(startPos, endPos);
 			timeRange.startTime = selectedTimeRange.startTime;
 			timeRange.endTime = selectedTimeRange.endTime;
 			System.out.println(timeRange);
 		}
-		
+
 		btnPlay_.setText("Stop");
 		playThread_ = new Thread(new Runnable() {
 			public void run() {
@@ -228,7 +228,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		});
 		playThread_.start();
 	}
-	
+
 	public void actLoadExecuted(ActionEvent e) {
 		if (!confirmSaveAndContinue()) { return; }
 		createFileChooser();
@@ -236,15 +236,15 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			load(fileChooser_.getSelectedFile());
 		}
 	}
-	
+
 	public void actSaveAsExecuted(ActionEvent e) {
 		save(true);
 	}
-	
+
 	public void actSaveExecuted(ActionEvent e) {
 		save(false);
 	}
-	
+
 	private boolean save(boolean isSaveAs) {
 		if (isSaveAs || currentFile_ == null) {
 			createFileChooser();
@@ -258,7 +258,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		save(currentFile_);
 		return true;
 	}
-	
+
 	private void save(File file) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf-8"));
@@ -267,7 +267,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				writer.write(";\n");
 			}
 			writer.close();
-			
+
 			currentFile_ = file;
 			isModified_ = false;
 			setTitle();
@@ -275,7 +275,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void load(File file) {
 		try {
 			StringBuilder sb = new StringBuilder();
@@ -287,7 +287,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				sb.append(buff, 0, len);
 			}
 			reader.close();
-			
+
 			int index = 0;
 			for (String mml : sb.toString().split(";")) {
 				if (mml.trim().equals("")) { continue; }
@@ -308,7 +308,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			}
 			centerGridLayout_.setRows(mmlInfoList_.size());
 			centerPanel_.doLayout();
-			
+
 			currentFile_ = file;
 			isModified_ = false;
 			setTitle();
@@ -316,7 +316,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private boolean confirmSaveAndContinue() {
 		if (!isModified_) { return true; }
 		int result = JOptionPane.showConfirmDialog(this, "現在の変更を保存しますか", "保存の確認", JOptionPane.YES_NO_CANCEL_OPTION);
@@ -328,23 +328,24 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		}
 		return false;
 	}
-	
+
 	private JFileChooser createFileChooser() {
 		if (fileChooser_ == null) {
 			fileChooser_ = new JFileChooser();
 		}
 		return fileChooser_;
 	}
-	
+
 	private class MMLInfo implements DocumentListener, CaretListener {
 		private MMLParser mml_;
+		private MMLParser mmlForPlay_;
 		private Object caretTimeHighlightTag_;
 		private Object playingHighlightTag_;
 		private MMLParser.Note prevHighlightNote_;
 		private Position[] positions_;
 		private JTextComponent editor_;
 		private boolean needRefresh_ = true;
-		
+
 		public MMLInfo(JTextComponent editor) {
 			editor_ = editor;
 			editor.getDocument().addDocumentListener(this);
@@ -357,35 +358,38 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				e.printStackTrace();
 			}
 		}
-		
-		private void refresh() {
-			if (needRefresh_) {
+
+		private void refresh(boolean isForPlay) {
+			if (needRefresh_ || isForPlay) {
 				ArrayList<MMLParser.Tempo> tempoList = null;
 				if (mmlInfoList_.get(0) != this) {
 					tempoList = mmlInfoList_.get(0).mml_.getTempoList();
 				}
 				String mmlText = editor_.getText();
 				mml_ = new MMLParser(mmlText, tempoList);
+				if (isForPlay) { mmlForPlay_ = new MMLParser(mmlText, tempoList); }
 				needRefresh_ = false;
 			}
 		}
-		
+
 		private void refreshPositions() {
 			try {
-				refresh();
+				refresh(true);
 				Document doc = editor_.getDocument();
 				String mmlText = editor_.getText();
 				positions_ = new Position[mmlText.length() + 1];
-				ArrayList<MMLParser.Element> elems = mml_.getMMLElements();
+				ArrayList<MMLParser.Element> elems = mmlForPlay_.getMMLElements();
 				for (MMLParser.Element elem : elems) {
 					int pos = elem.getStartPos();
 					if (positions_[pos] == null) { positions_[pos] = doc.createPosition(pos); }
 					pos = elem.getEndPos();
 					if (positions_[pos] == null) { positions_[pos] = doc.createPosition(pos); }
 				}
-			} catch(Exception e) {}			
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 		}
-		
+
 		private void update(TimeRange timeRange) {
 			ArrayList<MMLParser.Element> elems = mml_.findElements(timeRange);
 			if (elems.size() == 0) { return; }
@@ -397,14 +401,14 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				h.changeHighlight(caretTimeHighlightTag_, startPos, endPos);
 			} catch(Exception e2) {}
 		}
-		
+
 		private void hidePlaying() {
 			try {
 				Highlighter h = editor_.getHighlighter();
 				h.changeHighlight(playingHighlightTag_, 0, 0);
 			} catch(Exception e) {}
 		}
-		
+
 		private void updatePlaying(MMLParser.Note[] notes) {
 			if (notes == null) {
 				hidePlaying();
@@ -412,12 +416,12 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			}
 			MMLParser.Note targetNote = null;
 			for (MMLParser.Note note : notes) {
-				if (note != null && note.isParent(mml_)) {
+				if (note != null && note.isParent(mmlForPlay_)) {
 					targetNote = note;
 					break;
 				}
 			}
-			
+
 			if (targetNote == prevHighlightNote_) {
 				return;
 			}
