@@ -107,6 +107,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		addWindowListener(this);
+		setTitle();
 	}
 
 	// ----------------------------------------------------------
@@ -293,6 +294,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				if (mml.trim().equals("")) { continue; }
 				if (index >= mmlInfoList_.size()) {
 					addEditor();
+					System.out.println("add");
 				}
 				if (mml.startsWith("\r\n")) { mml = mml.substring(2); }
 				else if (mml.startsWith("\n")) { mml = mml.substring(1); }
@@ -303,8 +305,10 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			for (int i = index; i < 3 && i < mmlInfoList_.size(); i++) {
 				mmlInfoList_.get(i).editor_.setText("");
 			}
-			for (int i = 3; i < mmlInfoList_.size(); i++) {
+			int n = mmlInfoList_.size();
+			for (int i = index; i < n; i++) {
 				removeEditor(3);
+				System.out.println("remove...");
 			}
 			centerGridLayout_.setRows(mmlInfoList_.size());
 			centerPanel_.doLayout();
