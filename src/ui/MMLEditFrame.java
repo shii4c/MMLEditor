@@ -396,7 +396,10 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 
 		private void update(TimeRange timeRange) {
 			ArrayList<MMLParser.Element> elems = mml_.findElements(timeRange);
-			if (elems.size() == 0) { return; }
+			if (elems.size() == 0) {
+				hideCaretTimeHightlight();
+				return;
+			}
 			//
 			int startPos = elems.get(0).getStartPos();
 			int endPos = elems.get(elems.size() - 1).getEndPos();
@@ -404,6 +407,13 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			try {
 				h.changeHighlight(caretTimeHighlightTag_, startPos, endPos);
 			} catch(Exception e2) {}
+		}
+
+		private void hideCaretTimeHightlight() {
+			try {
+				Highlighter h = editor_.getHighlighter();
+				h.changeHighlight(caretTimeHighlightTag_, 0, 0);
+			} catch(Exception e) {}
 		}
 
 		private void hidePlaying() {
