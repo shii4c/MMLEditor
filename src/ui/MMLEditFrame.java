@@ -294,7 +294,6 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				if (mml.trim().equals("")) { continue; }
 				if (index >= mmlInfoList_.size()) {
 					addEditor();
-					System.out.println("add");
 				}
 				if (mml.startsWith("\r\n")) { mml = mml.substring(2); }
 				else if (mml.startsWith("\n")) { mml = mml.substring(1); }
@@ -308,7 +307,6 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			int n = mmlInfoList_.size();
 			for (int i = index; i < n; i++) {
 				removeEditor(3);
-				System.out.println("remove...");
 			}
 			centerGridLayout_.setRows(mmlInfoList_.size());
 			centerPanel_.doLayout();
@@ -440,10 +438,14 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				return;
 			}
 			prevHighlightNote_ = targetNote;
-			Highlighter h = editor_.getHighlighter();
-			try {
-				h.changeHighlight(playingHighlightTag_, positions_[targetNote.getStartPos()].getOffset(), positions_[targetNote.getEndPos()].getOffset());
-			} catch(Exception e) {}
+			if (targetNote != null) {
+				Highlighter h = editor_.getHighlighter();
+				try {
+					h.changeHighlight(playingHighlightTag_, positions_[targetNote.getStartPos()].getOffset(), positions_[targetNote.getEndPos()].getOffset());
+				} catch(Exception e) {}
+			} else {
+				hidePlaying();
+			}
 		}
 
 		@Override
