@@ -150,6 +150,9 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		if (refreshCounter_ > 0) {
 			refreshCounter_--;
 			if (refreshCounter_ == 0) {
+				if (mmlInfoList_.get(0).isNeedRefresh()) {
+					for (MMLInfo mmlInfo : mmlInfoList_) { mmlInfo.setNeedRefresh(); }
+				}
 				MMLInfo focusedMMLInfo = null;
 				for (MMLInfo mmlInfo : mmlInfoList_) {
 					mmlInfo.refresh(false);
@@ -360,6 +363,9 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 				e.printStackTrace();
 			}
 		}
+
+		public boolean isNeedRefresh() { return needRefresh_; }
+		public void setNeedRefresh() { needRefresh_ = true; }
 
 		private void refresh(boolean isForPlay) {
 			if (needRefresh_ || isForPlay) {
