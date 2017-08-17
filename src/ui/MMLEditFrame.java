@@ -51,10 +51,12 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 	private JPanel centerPanel_ = new JPanel(centerGridLayout_);
 	private ArrayList<JTextArea> mmlEditors_ = new ArrayList<>();
 	private CAction actPlay_   = new CAction(this, "Play", "Play");
+	private CAction actStop_   = new CAction(this, "Stop", "Stop");
+	private ActionSelector actPlayStop_ = new ActionSelector(actPlay_);
 	private CAction actLoad_   = new CAction(this, "Load", "Load");
 	private CAction actSave_   = new CAction(this, "Save", "Save");
 	private CAction actSaveAs_ = new CAction(this, "SaveAs", "Save as");
-	private JButton btnPlay_ = new JButton(actPlay_);
+	private JButton btnPlay_ = new JButton(actPlayStop_);
 	private JFileChooser fileChooser_;
 	private File currentFile_;
 	private boolean isModified_;
@@ -88,7 +90,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		mnuFile.add(new JMenuItem(actSaveAs_));
 		menuBar.add(mnuFile);
 		JMenu mnuPlay = new JMenu("Play");
-		mnuPlay.add(new JMenuItem(actPlay_));
+		mnuPlay.add(new JMenuItem(actPlayStop_));
 		menuBar.add(mnuPlay);
 		setJMenuBar(menuBar);
 
@@ -102,6 +104,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		timer_.start();
 
 		actPlay_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+		actStop_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 		btnPlay_.setFocusable(false);
 		actSave_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
 
@@ -213,7 +216,7 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 			System.out.println(timeRange);
 		}
 
-		btnPlay_.setText("Stop");
+		actPlayStop_.selectAction(actStop_);
 		playThread_ = new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -225,12 +228,18 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 						for(MMLInfo mmlInfo : mmlInfoList_) {
 							mmlInfo.updatePlaying(null);
 						}
-						btnPlay_.setText("Play");
+						actPlayStop_.selectAction(actPlay_);
 					}
 				});
 			}
 		});
 		playThread_.start();
+	}
+
+	public void actStopExecuted(ActionEvent e) {
+		if (playThread_ != null) {
+			player_.requestStop();
+		}
 	}
 
 	public void actLoadExecuted(ActionEvent e) {
