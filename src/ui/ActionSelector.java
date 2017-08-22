@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.Action;
+import javax.swing.JButton;
 
 public class ActionSelector implements Action, PropertyChangeListener {
 	private Action action_;
@@ -31,6 +32,13 @@ public class ActionSelector implements Action, PropertyChangeListener {
 				propertyChange(new PropertyChangeEvent(action, key, oldValue, action.getValue(key)));
 			}
 		}
+	}
+
+	public JButton createToolbarButton() {
+		JButton button = new JButton(this);
+		button.setFocusable(false);
+		button.setHideActionText(true);
+		return button;
 	}
 
 	// -------------------------------------------------------------------------------------
@@ -87,5 +95,4 @@ public class ActionSelector implements Action, PropertyChangeListener {
 			((PropertyChangeListener)listener).propertyChange(e);
 		}
 	}
-
 }

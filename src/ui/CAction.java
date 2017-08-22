@@ -9,6 +9,7 @@ import java.net.URL;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.KeyStroke;
 
 
@@ -186,4 +187,11 @@ public class CAction extends AbstractAction {
 	}
 
 	public int getIconIndex() { return selectedIconIndex_; }
+
+	public JButton createToolbarButton() {
+		JButton button = new JButton(this);
+		button.setFocusable(false);
+		button.setHideActionText(true);
+		return button;
+	}
 }

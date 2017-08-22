@@ -18,7 +18,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -28,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -49,6 +49,7 @@ import audio.MMLPlayer2;
 public class MMLEditFrame extends JFrame implements WindowListener {
 	private GridLayout centerGridLayout_ = new GridLayout(3, 1);
 	private JPanel centerPanel_ = new JPanel(centerGridLayout_);
+	private JToolBar toolbar_ = new JToolBar();
 	private ArrayList<JTextArea> mmlEditors_ = new ArrayList<>();
 	private CAction actPlay_   = new CAction(this, "Play", "Play");
 	private CAction actStop_   = new CAction(this, "Stop", "Stop");
@@ -56,7 +57,6 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 	private CAction actLoad_   = new CAction(this, "Load", "Load");
 	private CAction actSave_   = new CAction(this, "Save", "Save");
 	private CAction actSaveAs_ = new CAction(this, "SaveAs", "Save as");
-	private JButton btnPlay_ = new JButton(actPlayStop_);
 	private JFileChooser fileChooser_;
 	private File currentFile_;
 	private boolean isModified_;
@@ -72,9 +72,8 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 		setSize(720, 480);
 
 		// North
-		JPanel northPanel = new JPanel();
-		add(northPanel, BorderLayout.NORTH);
-		northPanel.add(btnPlay_);
+		add(toolbar_, BorderLayout.NORTH);
+		toolbar_.add(actPlayStop_.createToolbarButton());
 
 		// Center
 		add(centerPanel_, BorderLayout.CENTER);
@@ -105,7 +104,6 @@ public class MMLEditFrame extends JFrame implements WindowListener {
 
 		actPlay_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 		actStop_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-		btnPlay_.setFocusable(false);
 		actSave_.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
